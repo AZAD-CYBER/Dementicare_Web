@@ -14,7 +14,7 @@ import brain1 from "../../image/brain1.png";
 import brain2 from "../../image/brain2.png";
 import brain from "../../image/brain.png";
 import doc from "../../image/doc.webp";
-import { Button } from "@material-ui/core";
+import { Button } from "@mui/material";
 import bgRemoveDoctor from "../../image/doc1.png";
 import ellips1 from "../../image/Elipse 1.jpg";
 import ellips2 from "../../image/Elipse 2.jpg";

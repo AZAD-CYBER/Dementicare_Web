@@ -9,9 +9,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  makeStyles,
-} from "@material-ui/core";
-import { Close as CloseIcon } from "@material-ui/icons";
+} from "@mui/material";
+import { makeStyles } from '@mui/styles';
+import { Close as CloseIcon } from "@mui/icons-material";
 import { format } from "date-fns";
 
 const useStyles = makeStyles((theme) => ({

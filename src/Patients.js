@@ -4,12 +4,12 @@ import {
   TableContainer,
   Paper,
   Table,
-  makeStyles,
   TableHead,
   TableRow,
   TableCell,
   TableBody,
-} from "@material-ui/core";
+} from "@mui/material";
+import { makeStyles } from '@mui/styles';
 import { useEffect } from "react";
 import { useState } from "react";
 import { db } from "./firebase";

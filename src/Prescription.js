@@ -4,7 +4,6 @@ import "./Prescription.css";
 import {
   TableContainer,
   Paper,
-  makeStyles,
   Table,
   TableHead,
   TableRow,
@@ -15,7 +14,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
-} from "@material-ui/core";
+} from "@mui/material";
+import { makeStyles } from '@mui/styles';
 import { useEffect } from "react";
 import FullHeight from "react-full-height";
 import { db } from "./firebase";

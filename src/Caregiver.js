@@ -1,15 +1,15 @@
 import React,{useState,useEffect} from "react";
-import { Box, Button, CircularProgress, Grid, ThemeProvider} from "@material-ui/core";
+import { Box, Button, CircularProgress, Grid, ThemeProvider} from "@mui/material";
 import theme from "./theme/theme";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import JobCart from "./components/Job/JobCart";
 import NewJobMod from "./components/Job/NewJobMod";
 import {firestore1,firebase} from "../src/firebase"
-import {Close as CloseIcon} from '@material-ui/icons'
+import {Close as CloseIcon} from '@mui/icons-material'
 import ViewJobModal from "./components/Job/ViewJobModal";
 
-export default () => {
+const Caregiver = () => {
 const [jobs, setJobs]= useState([]);
 const [loading,setLoading] = useState(true);
 const [customSearch,setCustomSearch] = useState(false);
@@ -49,7 +49,8 @@ const postJob = async jobDetails =>{
 useEffect(()=>{
   fetchJobs();
 },[]);
-  return <ThemeProvider theme={theme}>
+  return (
+    <ThemeProvider theme={theme}>
     <Header openNewJobModal={() =>setNewJobModal(true)}/>
     <NewJobMod closeModal={() =>setNewJobModal(false)} newJobModal={newJobModal} postJob={postJob}/>
     <ViewJobModal job= {viewJob} closeModal={() => setViewJob({})}/>
@@ -80,4 +81,7 @@ useEffect(()=>{
     </Grid>
     </Box>
   </ThemeProvider>
+  );
 };
+
+export default Caregiver;

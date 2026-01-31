@@ -1,6 +1,7 @@
 import React from 'react';
-import {Box,Grid,Typography,Button,makeStyles} from "@material-ui/core"
+import {Box,Grid,Typography,Button} from "@mui/material"
 import {differenceInHours} from 'date-fns'
+import { makeStyles } from '@mui/styles';
 
 
 const useStyles= makeStyles((theme)=>({
@@ -37,7 +38,7 @@ const useStyles= makeStyles((theme)=>({
 }));
 
 
-export default (props) =>{
+const JobCart = (props) =>{
     const classes = useStyles()
 
     return (
@@ -66,3 +67,5 @@ export default (props) =>{
         </Box>
     )
 }
+
+export default JobCart;

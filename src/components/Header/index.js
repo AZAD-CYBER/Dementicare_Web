@@ -1,5 +1,5 @@
 import React from "react";
-import {Box,Grid,typography,Button, Typography} from '@material-ui/core'
+import {Box,Grid,typography,Button, Typography} from '@mui/material'
 
 export default (props) =>( 
 <Box py={10} bgcolor="secondary.main" color="white">

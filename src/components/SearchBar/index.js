@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import {Box,Button,Select,Typography,MenuItem,makeStyles,CircularProgress} from '@material-ui/core'
+import {Box,Button,Select,Typography,MenuItem,CircularProgress} from '@mui/material'
+import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles({
     wrapper:{
@@ -15,7 +16,7 @@ const useStyles = makeStyles({
 
     },
 });
-export default props =>{
+const SearchBar = props =>{
     const[loading,setLoading] = useState(false)
     const [jobSearch,setJobSearch] = useState({
         type :"Full-time",
@@ -56,3 +57,5 @@ export default props =>{
         </Box>
     )
 }
+
+export default SearchBar;

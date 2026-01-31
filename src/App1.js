@@ -10,11 +10,11 @@ import {
   TableHead,
   TableRow,
   TableCell,
-  makeStyles,
   Paper,
   Select,
   MenuItem,
-} from "@material-ui/core";
+} from "@mui/material";
+import { makeStyles } from '@mui/styles';
 import FullHeight from "react-full-height";
 import { db } from './firebase';
 const useStyles = makeStyles({

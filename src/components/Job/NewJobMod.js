@@ -10,12 +10,12 @@ import {
   DialogContent,
   DialogActions,
   Typography,
-  makeStyles,
   Button,
   IconButton,
   CircularProgress
-} from '@material-ui/core';
-import { Close as CloseIcon } from "@material-ui/icons";
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { Close as CloseIcon } from "@mui/icons-material";
 
 const useStyles = makeStyles(theme => ({
   skillChip: {

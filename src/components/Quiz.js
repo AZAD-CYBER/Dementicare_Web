@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { Breadcrumb } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import Confetti from "react-confetti";
 import "./quiz.css";
 import { db } from "../firebase";
 
 function Quiz() {
   const [showResults, setShowResults] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [scoreSentiment, setScoreSentiment] = useState(0);
 
   const [score, setScore] = useState(0);
 
@@ -126,7 +124,6 @@ function Quiz() {
   const restartGame = () => {
     // Perform sentiment analysis on the score
     let scoreSentiment = analyzeSentiment(score);
-    setScoreSentiment(scoreSentiment);
     setScore(0);
     setCurrentQuestion(0);
     setShowResults(false);

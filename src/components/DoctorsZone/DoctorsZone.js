@@ -7,14 +7,14 @@ import {
   TableContainer,
   Paper,
   Table,
-  makeStyles,
   TableHead,
   TableRow,
   TableCell,
   TableBody,
   Select,
   MenuItem,
-} from "@material-ui/core";
+} from "@mui/material";
+import { makeStyles } from '@mui/styles';
 import Sidebar from "../Sidebar/Sidebar";
 import FullHeight from "react-full-height";
 import { db } from "../../firebase";
@@ -28,7 +28,6 @@ const DoctorsZone = () => {
   const [initialDate, setInitialDate] = useState(new Date());
   const [appointment, setAppointment] = useState([]);
   const [key, setKey] = useState(null);
-  const [action, setAction] = useState(null);
   const classes = useStyles();
   const day = initialDate.getDate();
   const month = initialDate.getMonth();
