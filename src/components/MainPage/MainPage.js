@@ -25,7 +25,8 @@ import drImage1 from "../../image/dr-image1.png";
 import drImage3 from "../../image/dr-image3.png";
 import { Modal } from "react-bootstrap";
 import { useState } from "react";
-import { db } from "../../firebase";
+import apiService from "../../services/api";
+
 const MainPage = () => {
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -33,25 +34,23 @@ const MainPage = () => {
   const [showModal, setShowModal] = useState(false);
   const handleClose = () => setShowModal(false);
   const type = localStorage.getItem("type");
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Add form data to Firestore
-      await db.collection("contactForm").add({
-        email,
-        subject,
-        message,
-        //   createdAt: db.firestore.FieldValue.serverTimestamp(),
+      await apiService.submitContact({
+        name: subject,
+        email: email,
+        message: message,
       });
 
-      // Reset form values after submission
       setEmail("");
       setSubject("");
       setMessage("");
       setShowModal(true);
     } catch (error) {
-      console.error(error);
+      console.error("Error submitting contact form:", error);
     }
   };
   return (

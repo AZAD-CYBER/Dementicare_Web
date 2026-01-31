@@ -8,14 +8,16 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  CircularProgress,
 } from "@mui/material";
 import { makeStyles } from '@mui/styles';
 import { useEffect } from "react";
 import { useState } from "react";
-import { db } from "./firebase";
+import apiService from "./services/api";
 import FullHeight from "react-full-height";
 import { Link } from "react-router-dom";
 import { BsArrowLeft } from "react-icons/bs";
+
 const useStyle = makeStyles({
   table: {
     maxWidth: 1100,
@@ -24,20 +26,38 @@ const useStyle = makeStyles({
 
 const Patients = () => {
   const classes = useStyle();
-  const [appointment, setAppointment] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const appointmentsRef = db.collection("appointments");
-    const unsubscribe = appointmentsRef.onSnapshot((querySnapshot) => {
-      const data = querySnapshot.docs.map((doc) => doc.data());
-      if (data) {
-        const fetchedData = data.reverse();
-        setAppointment(fetchedData);
+    const fetchPatients = async () => {
+      try {
+        const data = await apiService.getPatients();
+        console.log('Patients data received:', data);
+        
+        // Handle both array and wrapped object formats
+        let patientsArray = [];
+        if (Array.isArray(data)) {
+          patientsArray = data;
+        } else if (data.patients) {
+          patientsArray = data.patients;
+        }
+        
+        console.log('Setting patients:', patientsArray);
+        setPatients(patientsArray);
+      } catch (err) {
+        console.error("Error fetching patients:", err);
+        setError(err.message || "Failed to load patients");
+        setPatients([]);
+      } finally {
+        setLoading(false);
       }
-    });
-    return () => unsubscribe();
+    };
+    
+    fetchPatients();
   }, []);
-  console.log(appointment);
+
   return (
     <div className="patients">
       <Link to="/dashboard">
@@ -48,42 +68,65 @@ const Patients = () => {
           <h4>Patients</h4>
           <div className="patientsTableDetails">
             <p>All Patients</p>
-            <TableContainer component={Paper}>
-              <Table className={classes.table} aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="left">Sr. No</TableCell>
-                    <TableCell align="left">Name</TableCell>
-                    <TableCell align="left">Gender</TableCell>
-                    <TableCell align="left">Age</TableCell>
-                    <TableCell align="left">Weight</TableCell>
-                    <TableCell align="left">Contact</TableCell>
-                    <TableCell align="left">Address</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {appointment.map((appoint) => (
-                    <TableRow key={appoint._id}>
-                      <TableCell align="left">
-                        {appointment.indexOf(appoint) + 1}
-                      </TableCell>
-                      <TableCell align="left">
-                        {appoint?.details?.name}
-                      </TableCell>
-                      <TableCell align="left">Male</TableCell>
-                      <TableCell align="left">25</TableCell>
-                      <TableCell align="left">70</TableCell>
-                      <TableCell align="left">
-                        {appoint?.details?.phoneNumber}
-                      </TableCell>
-                      <TableCell align="left">
-                        College Avenue, Barisal
-                      </TableCell>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <CircularProgress />
+                <p style={{ marginTop: '20px', color: '#666' }}>Loading patients...</p>
+              </div>
+            ) : error ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px',
+                background: '#fff3cd',
+                borderRadius: '8px',
+                border: '1px solid #ffc107'
+              }}>
+                <p style={{ color: '#856404', margin: 0 }}>⚠️ {error}</p>
+              </div>
+            ) : patients.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                background: '#f8f9fa',
+                borderRadius: '12px',
+                border: '2px dashed #dee2e6'
+              }}>
+                <div style={{ fontSize: '3rem', marginBottom: '15px' }}>👥</div>
+                <h5 style={{ color: '#666', marginBottom: '10px' }}>No Patients Found</h5>
+                <p style={{ color: '#999' }}>
+                  No patient records are available at the moment.
+                </p>
+              </div>
+            ) : (
+              <TableContainer component={Paper}>
+                <Table className={classes.table} aria-label="simple table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="left">Sr. No</TableCell>
+                      <TableCell align="left">Name</TableCell>
+                      <TableCell align="left">Gender</TableCell>
+                      <TableCell align="left">Age</TableCell>
+                      <TableCell align="left">Phone</TableCell>
+                      <TableCell align="left">Address</TableCell>
+                      <TableCell align="left">Diagnosis</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {patients.map((patient, index) => (
+                      <TableRow key={patient.id}>
+                        <TableCell align="left">{index + 1}</TableCell>
+                        <TableCell align="left">{patient.name}</TableCell>
+                        <TableCell align="left">{patient.gender}</TableCell>
+                        <TableCell align="left">{patient.age}</TableCell>
+                        <TableCell align="left">{patient.phone}</TableCell>
+                        <TableCell align="left">{patient.address}</TableCell>
+                        <TableCell align="left">{patient.diagnosis}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
           </div>
         </div>
       </FullHeight>

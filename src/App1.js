@@ -16,7 +16,8 @@ import {
 } from "@mui/material";
 import { makeStyles } from '@mui/styles';
 import FullHeight from "react-full-height";
-import { db } from './firebase';
+import apiService from './services/api';
+
 const useStyles = makeStyles({
   table: {
     maxWidth: 1300,
@@ -24,9 +25,7 @@ const useStyles = makeStyles({
 });
 
 const Dashboard = () => {
-  const [appointment, setAppointment] = useState([]);
-  // const [action1, setAction1] = useState(null);
-  const [key, setKey] = useState(null);
+  const [appointments, setAppointments] = useState([]);
   const classes = useStyles();
  
   const todaysDate = new Date();
@@ -34,35 +33,54 @@ const Dashboard = () => {
   const month = todaysDate.getMonth();
   const year = todaysDate.getFullYear();
   const fullTodaysDate = month + 1 + "/" + day + "/" + year;
-  const selectedDateAppointment = appointment.filter(
-    (appointment) => appointment?.details?.date === fullTodaysDate
-  );
-
-  const handleChange = (event) => {
-    let action1 = event.target.value;
-    const appointmentRef = db.collection("appointments").doc(key);
-    appointmentRef.update({ action1 })
-      .then(() => {
-        console.log("Document successfully updated!");
-      })
-      .catch((error) => {
-        console.error("Error updating document: ", error);
-      });
-  };
-  const pendingAppointment = appointment.filter(
-    (pa) => pa.action1 === "pending"
+  
+  const selectedDateAppointment = appointments.filter(
+    (appointment) => {
+      const appointmentDate = new Date(appointment.date);
+      return appointmentDate.toLocaleDateString() === new Date(fullTodaysDate).toLocaleDateString();
+    }
   );
 
   useEffect(() => {
-    const appointmentsRef = db.collection("appointments");
-    appointmentsRef.onSnapshot((snapshot) => {
-      const appointments = snapshot.docs.map((doc) => {
-        return { key: doc.id, ...doc.data() };
-      });
-      setAppointment(appointments);
-    });
+    const fetchAppointments = async () => {
+      try {
+        const data = await apiService.getAppointments();
+        console.log('App1 appointments data:', data);
+        
+        // Handle both array and wrapped object formats
+        let appointmentsArray = [];
+        if (Array.isArray(data)) {
+          appointmentsArray = data;
+        } else if (data.appointments) {
+          appointmentsArray = data.appointments;
+        }
+        
+        setAppointments(appointmentsArray);
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+        setAppointments([]);
+      }
+    };
+    fetchAppointments();
   }, []);
-console.log(appointment)
+
+  const handleChange = async (event, appointmentId) => {
+    const newStatus = event.target.value;
+    try {
+      await apiService.updateAppointment(appointmentId, { status: newStatus });
+      console.log("Appointment successfully updated!");
+      // Refresh appointments
+      const data = await apiService.getAppointments();
+      setAppointments(data.appointments || []);
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+    }
+  };
+
+  const pendingAppointments = appointments.filter(
+    (pa) => pa.status === "pending"
+  );
+
   return (
     <div className="dashboard">
       <Sidebar></Sidebar>
@@ -72,7 +90,7 @@ console.log(appointment)
             <h4>Dashboard</h4>
             <div className="dashboardHeading">
               <div style={{ backgroundColor: "tomato" }}>
-                <h1>{pendingAppointment.length}</h1>
+                <h1>{pendingAppointments.length}</h1>
                 <p>
                   Pending
                   <br />
@@ -88,7 +106,7 @@ console.log(appointment)
                 </p>
               </div>
               <div style={{ backgroundColor: "mediumseagreen" }}>
-                <h1>{appointment.length}</h1>
+                <h1>{appointments.length}</h1>
                 <p>
                   Total
                   <br />
@@ -96,7 +114,7 @@ console.log(appointment)
                 </p>
               </div>
               <div style={{ backgroundColor: "orange" }}>
-                <h1>{appointment.length}</h1>
+                <h1>{appointments.length}</h1>
                 <p>
                   Total
                   <br />
@@ -121,36 +139,27 @@ console.log(appointment)
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {appointment.map((appoint) => (
-                        <TableRow key={appoint._id}>
-                          <TableCell align="left">
-                            {appointment.indexOf(appoint) + 1}
-                          </TableCell>
+                      {appointments.map((appoint, index) => (
+                        <TableRow key={appoint.id}>
+                          <TableCell align="left">{index + 1}</TableCell>
                           <TableCell align="center">
-                            {appoint?.details?.date}
+                            {new Date(appoint.date).toLocaleDateString()}
                           </TableCell>
-                          <TableCell align="center">
-                            {appoint?.details?.time}
-                          </TableCell>
-                          <TableCell align="left">
-                            {appoint?.details?.name}
-                          </TableCell>
-                          <TableCell align="center">
-                            {appoint?.details?.phoneNumber}
-                          </TableCell>
+                          <TableCell align="center">{appoint.time}</TableCell>
+                          <TableCell align="left">{appoint.patient_id}</TableCell>
+                          <TableCell align="center">{appoint.notes || 'N/A'}</TableCell>
                           <TableCell align="center">Not Added</TableCell>
-                          <TableCell
-                            onMouseOver={() => setKey(appoint.key)}
-                            align="center"
-                          >
+                          <TableCell align="center">
                             <Select
                               style={{ color: "white" }}
                               className="actionSelect"
-                              value={appoint.action1}
-                              onChange={handleChange}
+                              value={appoint.status}
+                              onChange={(e) => handleChange(e, appoint.id)}
                             >
                               <MenuItem value={"pending"}>Pending</MenuItem>
-                              <MenuItem value={"approved"}>Approved</MenuItem>
+                              <MenuItem value={"confirmed"}>Confirmed</MenuItem>
+                              <MenuItem value={"completed"}>Completed</MenuItem>
+                              <MenuItem value={"cancelled"}>Cancelled</MenuItem>
                             </Select>
                           </TableCell>
                         </TableRow>

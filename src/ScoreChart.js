@@ -1,34 +1,48 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {Chart,LinearScale } from 'chart.js/auto';
-import { db } from './firebase';
+import apiService from './services/api';
 import { Link } from 'react-router-dom';
 import { BsArrowLeft } from 'react-icons/bs';
+
 const ScoreSentiment = () => {
   const [sentimentScores, setSentimentScores] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const scoresCollection = db.collection('scores');
-    scoresCollection.get()
-      .then((querySnapshot) => {
-        const scores = [];
-        querySnapshot.forEach((doc) => {
-          scores.push({
-            id: doc.id,
-            sentiment: doc.data().sentiment,
-            score: doc.data().score,
-          });
-        });
+    const fetchQuizResults = async () => {
+      try {
+        const data = await apiService.getQuizResults();
+        const results = data.quiz_results || [];
+        
+        // Transform backend data to match expected format
+        const scores = results.map(result => ({
+          id: result.id,
+          score: result.score,
+          maxScore: result.max_score,
+          sentiment: calculateSentiment(result.score)
+        }));
+        
         setSentimentScores(scores);
-      })
-      .catch((error) => {
-        console.error('Error fetching scores: ', error);
-      });
+      } catch (error) {
+        console.error('Error fetching quiz results: ', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuizResults();
   }, []);
+
+  const calculateSentiment = (score) => {
+    if (score < 5 && score !== 0) return 'negative';
+    if (score > 5) return 'positive';
+    return 'neutral';
+  };
 
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    if (sentimentScores.length > 0) {
+    if (sentimentScores.length > 0 && canvasRef.current) {
       const ctx = canvasRef.current.getContext('2d');
       const labels = ['Positive', 'Neutral', 'Negative'];
       const data = [

@@ -3,6 +3,7 @@ import { Form, Button, Col, Row } from "react-bootstrap";
 import { Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import apiService from "../services/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -14,42 +15,27 @@ export default function Login() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   console.log(isLoggedIn);
   const navigate = useNavigate();
-  const handleSubmit = (e) => {
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    fetch("http://127.0.0.1:8000/auth/user/login/", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          // Handle Successful login
-          console.log("Successful login");
-          return response.json();
-        } else if (response.status === 401) {
-          // Handle Unauthorized
-          // setIsLoggedIn(true);
-          setAlertMessage("Invalid email or password");
-          setShowAlert(true);
-        } else {
-          console.log("An error occurred, status code:- ", response.status);
-        }
-      })
-      .then((data) => {
-        if (data && data.token) {
-          // Store token in local storage
-          // localStorage.setItem('token', JSON.stringify({ access_token: 'your_token_here' }));
-          localStorage.setItem("isLoggedIn", JSON.stringify(true));
-          localStorage.setItem("token", JSON.stringify(data.token));
-          localStorage.setItem("type", userType);
-          setIsLoggedIn(false);
-          navigate("/");
-          window.location.reload();
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    
+    try {
+      const data = await apiService.login(email, password);
+      
+      if (data && data.token) {
+        // Store token in local storage
+        localStorage.setItem("isLoggedIn", JSON.stringify(true));
+        localStorage.setItem("token", JSON.stringify(data.token));
+        localStorage.setItem("type", data.user.user_type || userType);
+        setIsLoggedIn(false);
+        navigate("/");
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setAlertMessage(error.message || "Login failed");
+      setShowAlert(true);
+    }
   };
 
   const handleLogout = () => {

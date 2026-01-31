@@ -13,11 +13,13 @@ import {
   TableBody,
   Select,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { makeStyles } from '@mui/styles';
 import Sidebar from "../Sidebar/Sidebar";
 import FullHeight from "react-full-height";
-import { db } from "../../firebase";
+import apiService from "../../services/api";
+
 const useStyles = makeStyles({
   table: {
     minWidth: 500,
@@ -26,39 +28,54 @@ const useStyles = makeStyles({
 
 const DoctorsZone = () => {
   const [initialDate, setInitialDate] = useState(new Date());
-  const [appointment, setAppointment] = useState([]);
-  const [key, setKey] = useState(null);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const classes = useStyles();
   const day = initialDate.getDate();
   const month = initialDate.getMonth();
   const year = initialDate.getFullYear();
   const fullDate = month + 1 + "/" + day + "/" + year;
 
-  const handleChange = (event, appointmentKey) => {
-    let selectedAction = event.target.value;
-    const appointmentsRef = db.collection("appointments");
-    appointmentsRef
-      .doc(appointmentKey)
-      .update({ action: selectedAction })
-      .catch((error) => {
-        console.error(error);
-      });
+  const handleChange = async (event, appointmentId) => {
+    const selectedStatus = event.target.value;
+    try {
+      await apiService.updateAppointment(appointmentId, { status: selectedStatus });
+      fetchAppointments();
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const data = await apiService.getAppointments();
+      console.log('DoctorsZone appointments data:', data);
+      
+      // Handle both array and wrapped object formats
+      let appointmentsArray = [];
+      if (Array.isArray(data)) {
+        appointmentsArray = data;
+      } else if (data.appointments) {
+        appointmentsArray = data.appointments;
+      }
+      
+      setAppointments(appointmentsArray.reverse());
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      setAppointments([]);
+    } finally {
+      setLoading(false);
+    }
   };
   
-  
   useEffect(() => {
-    const appointmentsRef = db.collection("appointments");
-    appointmentsRef.onSnapshot((snapshot) => {
-      const appointments = snapshot.docs.map((doc) => {
-        return { key: doc.id, ...doc.data() };
-      });
-      setAppointment(appointments.reverse());
-    });
+    fetchAppointments();
   }, []);
 
-  const selectedDateAppointment = appointment.filter(
-    (appointment) => appointment?.details?.date === fullDate
-  );
+  const selectedDateAppointment = appointments.filter((appointment) => {
+    const appointmentDate = new Date(appointment.date);
+    return appointmentDate.toLocaleDateString() === initialDate.toLocaleDateString();
+  });
 
   return (
     <div className="doctorsZone">
@@ -68,11 +85,13 @@ const DoctorsZone = () => {
           <h4>Appointment</h4>
           <Calendar
             className="calender"
-            selected={initialDate}
+            value={initialDate}
             onChange={(date) => setInitialDate(date)}
           ></Calendar>
         </div>
-        {appointment[0] ? (
+        {loading ? (
+          <CircularProgress />
+        ) : appointments.length > 0 ? (
           <FullHeight>
             <div className="appointmentTable">
               <div className="tableHeading">
@@ -90,28 +109,22 @@ const DoctorsZone = () => {
                   </TableHead>
                   <TableBody>
                     {selectedDateAppointment.map((appointment) => (
-                      <TableRow key={appointment._id}>
+                      <TableRow key={appointment.id}>
                         <TableCell align="left">
-                          {appointment.details.name}
+                          Patient ID: {appointment.patient_id}
                         </TableCell>
-                        <TableCell align="center">
-                          {appointment.details.time}
-                        </TableCell>
-                        <TableCell
-                          onMouseOver={() => setKey(appointment.key)}
-                          align="right"
-                        >
-                         <Select
-  style={{ color: "white" }}
-  className="actionSelect"
-  value={appointment.action}
-  defaultValue={appointment.action}
-  onChange={(event) => handleChange(event, appointment.key)}
->
-  <MenuItem value={"notVisited"}>Not Visited</MenuItem>
-  <MenuItem value={"visited"}>Visited</MenuItem>
-</Select>
-
+                        <TableCell align="center">{appointment.time}</TableCell>
+                        <TableCell align="right">
+                          <Select
+                            className="actionSelect"
+                            value={appointment.status}
+                            onChange={(e) => handleChange(e, appointment.id)}
+                          >
+                            <MenuItem value="pending">Pending</MenuItem>
+                            <MenuItem value="confirmed">Confirmed</MenuItem>
+                            <MenuItem value="completed">Completed</MenuItem>
+                            <MenuItem value="cancelled">Cancelled</MenuItem>
+                          </Select>
                         </TableCell>
                       </TableRow>
                     ))}

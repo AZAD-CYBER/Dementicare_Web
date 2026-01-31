@@ -87,18 +87,20 @@ const Appointment = () => {
         </div>
       </div>
       <div className="appointmentDetails">
-        <h3>Available Appointment on {fullDate}</h3>
+        <h3>Available Appointments on {fullDate}</h3>
+        <p style={{color: '#666', marginTop: '10px'}}>Select a time slot to book your appointment</p>
       </div>
       <div className="container">
         <div className="row">
           {appointmentData.map((app) => (
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <AppointmentType
-                key={app.key}
-                appointmentData={app}
-                fullDate1={fullDate1}
-              />
-            </ErrorBoundary>
+            <div className="col-md-4 col-sm-6 col-12 mb-4" key={app.key}>
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <AppointmentType
+                  appointmentData={app}
+                  fullDate1={fullDate1}
+                />
+              </ErrorBoundary>
+            </div>
           ))}
         </div>
       </div>

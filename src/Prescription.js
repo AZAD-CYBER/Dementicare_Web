@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Prescription.css";
-
 import {
   TableContainer,
   Paper,
@@ -14,13 +13,15 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  TextField,
+  CircularProgress,
 } from "@mui/material";
 import { makeStyles } from '@mui/styles';
-import { useEffect } from "react";
 import FullHeight from "react-full-height";
-import { db } from "./firebase";
+import apiService from "./services/api";
 import { Link } from "react-router-dom";
 import { BsArrowLeft } from "react-icons/bs";
+
 const useStyle = makeStyles({
   table: {
     maxWidth: 1300,
@@ -29,30 +30,63 @@ const useStyle = makeStyles({
 
 const Prescription = () => {
   const classes = useStyle();
-  const [appointment, setAppointment] = useState([]);
-  const [openPrescription, setOpenPrescription] = useState(false);
-  const [selectedPrescription, setSelectedPrescription] = useState({});
-  const [newPrescription, setNewPrescription] = useState("");
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [newPrescription, setNewPrescription] = useState({
+    patient_id: "",
+    medication: "",
+    dosage: "",
+    frequency: "",
+    instructions: ""
+  });
 
   useEffect(() => {
-    const appointmentsRef = db.collection("appointments");
-    const unsubscribe = appointmentsRef.onSnapshot((querySnapshot) => {
-      const data = querySnapshot.docs.map((doc) => doc.data());
-      if (data) {
-        const fetchedData = data.reverse();
-        setAppointment(fetchedData);
-      }
-    });
-    return () => unsubscribe();
+    fetchPrescriptions();
+    fetchPatients();
   }, []);
 
-  const handleViewPrescription = (prescription) => {
-    setSelectedPrescription(prescription || newPrescription);
-    setOpenPrescription(true);
+  const fetchPrescriptions = async () => {
+    try {
+      const data = await apiService.getPrescriptions();
+      setPrescriptions(data.prescriptions || []);
+    } catch (err) {
+      console.error("Error fetching prescriptions:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleClosePrescription = () => {
-    setOpenPrescription(false);
+  const fetchPatients = async () => {
+    try {
+      const data = await apiService.getPatients();
+      setPatients(data.patients || []);
+    } catch (err) {
+      console.error("Error fetching patients:", err);
+    }
+  };
+
+  const handleSavePrescription = async () => {
+    try {
+      await apiService.createPrescription(newPrescription);
+      setNewPrescription({
+        patient_id: "",
+        medication: "",
+        dosage: "",
+        frequency: "",
+        instructions: ""
+      });
+      fetchPrescriptions();
+    } catch (err) {
+      console.error("Error saving prescription:", err);
+    }
+  };
+
+  const handleViewPrescription = (prescription) => {
+    setSelectedPrescription(prescription);
+    setOpenDialog(true);
   };
 
   return (
@@ -60,64 +94,80 @@ const Prescription = () => {
       <Link to="/dashboard">
         <BsArrowLeft /> Back
       </Link>
-      {appointment[0] ? (
-        <FullHeight>
-          <div className="prescriptionTable">
-            <h4>Prescription</h4>
-            <div className="prescriptionTableDetails">
-              <p>All Prescription</p>
-              <textarea
-                value={newPrescription}
-                onChange={(e) => setNewPrescription(e.target.value)}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  db.collection("appointments").add({
-                    prescription: newPrescription,
-                    details: {
-                      // add appointment details here
-                    },
-                  });
-                  setNewPrescription("");
-                }}
-              >
-                Save Prescription
-              </Button>
+      <FullHeight>
+        <div className="prescriptionTable">
+          <h4>Prescription</h4>
+          <div className="prescriptionTableDetails">
+            <p>Create New Prescription</p>
+            <TextField
+              label="Patient ID"
+              type="number"
+              value={newPrescription.patient_id}
+              onChange={(e) => setNewPrescription({...newPrescription, patient_id: e.target.value})}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Medication"
+              value={newPrescription.medication}
+              onChange={(e) => setNewPrescription({...newPrescription, medication: e.target.value})}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Dosage"
+              value={newPrescription.dosage}
+              onChange={(e) => setNewPrescription({...newPrescription, dosage: e.target.value})}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Instructions"
+              value={newPrescription.instructions}
+              onChange={(e) => setNewPrescription({...newPrescription, instructions: e.target.value})}
+              fullWidth
+              multiline
+              rows={3}
+              margin="normal"
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSavePrescription}
+              style={{ marginTop: '10px' }}
+            >
+              Save Prescription
+            </Button>
+
+            <p style={{ marginTop: '20px' }}>All Prescriptions</p>
+            {loading ? (
+              <CircularProgress />
+            ) : (
               <TableContainer component={Paper}>
-                <Table className={classes.table} aria-label="simple table">
+                <Table className={classes.table}>
                   <TableHead>
                     <TableRow>
-                      <TableCell align="left">Sr. No</TableCell>
-                      <TableCell align="left">Date</TableCell>
-                      <TableCell align="left">Name</TableCell>
-                      <TableCell align="left">Contact</TableCell>
-                      <TableCell align="center">Prescription</TableCell>
+                      <TableCell>Sr. No</TableCell>
+                      <TableCell>Patient ID</TableCell>
+                      <TableCell>Medication</TableCell>
+                      <TableCell>Dosage</TableCell>
+                      <TableCell>Date</TableCell>
+                      <TableCell>Action</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {appointment.map((appoint) => (
-                      <TableRow key={appoint._id}>
-                        <TableCell align="left">
-                          {appointment.indexOf(appoint) + 1}
-                        </TableCell>
-                        <TableCell align="left">
-                          {appoint?.details?.date}
-                        </TableCell>
-                        <TableCell align="left">
-                          {appoint?.details?.name}
-                        </TableCell>
-                        <TableCell align="left">
-                          {appoint?.details?.phoneNumber}
-                        </TableCell>
-                        <TableCell align="center">
+                    {prescriptions.map((prescription, index) => (
+                      <TableRow key={prescription.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{prescription.patient_id}</TableCell>
+                        <TableCell>{prescription.medication}</TableCell>
+                        <TableCell>{prescription.dosage}</TableCell>
+                        <TableCell>{new Date(prescription.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
                           <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() =>
-                              handleViewPrescription(appoint.prescription)
-                            }
+                            variant="outlined"
+                            size="small"
+                            onClick={() => handleViewPrescription(prescription)}
                           >
                             View
                           </Button>
@@ -127,32 +177,27 @@ const Prescription = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
-            </div>
+            )}
           </div>
-          <Dialog open={openPrescription} onClose={handleClosePrescription}>
-            <DialogTitle>Prescription</DialogTitle>
-            <DialogContent>
-              <pre>{JSON.stringify(selectedPrescription, null, 2)}</pre>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClosePrescription} color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </FullHeight>
-      ) : (
-        <FullHeight>
-          <div style={{ margin: "350px 550px", display: "flex" }}>
-            <div className="spinner-grow text-info" role="status">
-              <span className="sr-only">Loading...</span>
+        </div>
+      </FullHeight>
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Prescription Details</DialogTitle>
+        <DialogContent>
+          {selectedPrescription && (
+            <div>
+              <p><strong>Medication:</strong> {selectedPrescription.medication}</p>
+              <p><strong>Dosage:</strong> {selectedPrescription.dosage}</p>
+              <p><strong>Frequency:</strong> {selectedPrescription.frequency}</p>
+              <p><strong>Instructions:</strong> {selectedPrescription.instructions}</p>
             </div>
-            <div className="spinner-grow text-success" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-          </div>
-        </FullHeight>
-      )}
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

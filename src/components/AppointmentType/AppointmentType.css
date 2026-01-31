@@ -1,107 +1,212 @@
-.appointmentType{
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    margin-top: 40px;
-}
-.appointmentType h5{
-    font-weight: 700;
-    background: -webkit-linear-gradient(45deg, #19D3AE, #0FCFEC);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-.appointmentType p{
-    color: black !important;
-    font-weight: 700;
-}
-.appointmentType small{
-    color: gray;
-}
-.appointmentType button{
-    border: none;
-    outline: none;
-    padding: 8px 15px;
-    background-image: linear-gradient(to right, #19D3AE, #0FCFEC);
-    color: white;
-    font-weight: 700;
-    border-radius: 2px;
-}
-.popupDetails{
-    margin: auto;
-    padding: 40px;
-    background-color: white;
-    border-radius: 20px;
-    width: 700px;
-    position: relative;
-}
-.popupDetails h5{
-    margin-bottom: 30px;
-}
-.popupDetails .takeInput{
-    padding: 10px;
-    width: 500px;
-    border-radius: 10px;
-    border: 1px solid gray;
-    outline: none;
-}
-.popupDetails .submitBtn{
-    display: flex;
-    justify-content: flex-end;
-    margin-right: 55px;
-}
-.popupDetails .submitBtn > *{
-    padding: 5px 30px;
-    background-image: linear-gradient(to right, #19D3AE, #0FCFEC);
-    border: none;
-    outline: none;
-    color: white;
-    font-weight: 700;
-    border-radius: 5px;
+/* Appointment Card Styling */
+.appointment-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
 }
 
-@media only screen and (max-width: 991px) {
-    .appointmentType h5{
-        font-size: 18px;
-        font-weight: 600px;
-    }
-    .appointmentType button{
-        font-size: 14px;
-        padding: 8px 10px;
-    }
+.appointment-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(25, 211, 174, 0.2);
 }
 
-@media only screen and (max-width: 771px) {
-    .popupDetails{
-        width: 400px;
-        background-color: white;
-        border-radius: 20px;
-    }
-    .popupDetails .takeInput{
-        width: 300px;
-    }
+.appointment-title {
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
 }
 
-@media only screen and (max-width: 441px) {
-    .popupDetails{
-        width: 300px;
-        margin: 30px;
-    }
-    .popupDetails .takeInput{
-        width: 200px;
-    }
+.appointment-time {
+  color: #19D3AE;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 10px;
 }
 
-.popupDetails {
-    background: #f5f5f5;
-    padding: 30px;
-    border-radius: 5px;
+.appointment-details {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.appointment-button {
+  border: none;
+  outline: none;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #19D3AE 0%, #0FCFEC 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.appointment-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(25, 211, 174, 0.4);
+}
+
+/* Popup Modal Styling */
+.popup-details {
+  background: white;
+  padding: 0;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.popup-header {
+  background: linear-gradient(135deg, #19D3AE 0%, #0FCFEC 100%);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.popup-header h5 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 2rem;
+  line-height: 1;
+  padding: 5px 15px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+/* Form Styling */
+.appointment-form {
+  padding: 30px;
+}
+
+.appointment-form .form-group {
+  margin-bottom: 20px;
+}
+
+.appointment-form label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.appointment-form .form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.appointment-form .form-control:focus {
+  border-color: #19D3AE;
+  box-shadow: 0 0 0 0.2rem rgba(25, 211, 174, 0.15);
+  outline: none;
+}
+
+.appointment-form .form-control::placeholder {
+  color: #adb5bd;
+}
+
+.submit-button {
+  margin-top: 25px;
+}
+
+.submit-button .btn {
+  padding: 12px 30px;
+  font-weight: 600;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.submit-button .btn-primary {
+  background: linear-gradient(135deg, #19D3AE 0%, #0FCFEC 100%);
+  border: none;
+}
+
+.submit-button .btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(25, 211, 174, 0.4);
+}
+
+.submit-button .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success Alert Styling */
+.alert-success {
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  padding: 25px;
+  margin: 20px;
+}
+
+.alert-success h5 {
+  color: #155724;
+  margin-bottom: 15px;
+}
+
+.alert-danger {
+  border-radius: 12px;
+  margin: 20px;
+}
+
+/* Responsive Design */
+@media only screen and (max-width: 768px) {
+  .popup-details {
+    width: 95vw;
+    margin: 10px;
   }
   
-  .appointmentForm {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .appointment-form {
+    padding: 20px;
   }
+  
+  .popup-header {
+    padding: 15px 20px;
+  }
+  
+  .popup-header h5 {
+    font-size: 1.2rem;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .appointment-button {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .appointment-form .form-control {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+}
+   
   
   .form-group {
     width: 100%;

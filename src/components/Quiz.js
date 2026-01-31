@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Breadcrumb } from "react-bootstrap";
+import { Breadcrumb, Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "./quiz.css";
-import { db } from "../firebase";
+import apiService from "../services/api";
 
 function Quiz() {
   const [showResults, setShowResults] = useState(false);
@@ -121,25 +121,27 @@ function Quiz() {
 
   // const key = (length = 6) => Math.random().toString(20).substr(2, length);
 
-  const restartGame = () => {
+  const restartGame = async () => {
     // Perform sentiment analysis on the score
     let scoreSentiment = analyzeSentiment(score);
+    
+    try {
+      // Save quiz result to backend
+      const patientId = localStorage.getItem("patientId") || 1; // Get from logged in user or use default
+      await apiService.saveQuizResult({
+        patient_id: patientId,
+        score: score,
+        max_score: questions.length,
+        answers: JSON.stringify({ sentiment: scoreSentiment })
+      });
+      console.log("Quiz result saved successfully");
+    } catch (error) {
+      console.error("Error saving quiz result:", error);
+    }
+    
     setScore(0);
     setCurrentQuestion(0);
     setShowResults(false);
-
-    db.collection("scores")
-      .add({
-        score: score,
-        sentiment: scoreSentiment, // Add the sentiment to the score document
-        // timestamp: firebase.firestore.Timestamp.now()
-      })
-      .then((docRef) => {
-        console.log("Score document written with ID: ", docRef.id);
-      })
-      .catch((error) => {
-        console.error("Error adding score document: ", error);
-      });
   };
 
   return (
